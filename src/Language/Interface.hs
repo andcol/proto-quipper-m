@@ -4,4 +4,4 @@ import Interface
 
 import Language.Core
 
-type PQM exp = (HasLolli exp, HasTensor exp, HasCore exp)
+type PQM exp = (HasLolli exp, HasCore exp)

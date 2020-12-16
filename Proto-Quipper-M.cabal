@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 834fd6032e1ffaf3667231dcee9f23bdb8d1731d426c3f4af5967b49cf24d1ae
+-- hash: 000bbc342c717478031681db5c8cc5e118f1d7d69a6ebbc586130694693f92e5
 
 name:           Proto-Quipper-M
 version:        0.1.0.0
@@ -27,7 +27,9 @@ source-repository head
 
 library
   exposed-modules:
-      Circuit
+      Circuit.Class
+      Circuit.Effect
+      Circuit.Types
       Language.Core
       Language.Interface
       Lib
@@ -39,6 +41,7 @@ library
   build-depends:
       LNLHask
     , base >=4.7 && <5
+    , mtl
   default-language: Haskell2010
 
 executable Proto-Quipper-M-exe
@@ -53,6 +56,7 @@ executable Proto-Quipper-M-exe
       LNLHask
     , Proto-Quipper-M
     , base >=4.7 && <5
+    , mtl
   default-language: Haskell2010
 
 test-suite Proto-Quipper-M-test
@@ -68,4 +72,5 @@ test-suite Proto-Quipper-M-test
       LNLHask
     , Proto-Quipper-M
     , base >=4.7 && <5
+    , mtl
   default-language: Haskell2010
