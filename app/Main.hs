@@ -5,10 +5,12 @@ import Language.Interface
 
 --DEBUG
 import Circuit.Class
+import Circuit.Class
+import TypeclassTesting
 import Data.Proxy
-
+import GHC.TypeLits
 
 main :: IO ()
 main = do
-    let lc = reifyLabels (Proxy :: Proxy (1 : 1 : '[]))
-    print lc
+    let n = natVal . freshInWitness $ (Proxy :: Proxy [1,6,3,4])
+    print n

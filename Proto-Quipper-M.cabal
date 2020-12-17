@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 000bbc342c717478031681db5c8cc5e118f1d7d69a6ebbc586130694693f92e5
+-- hash: 10d3ee3b7f9de3f547c3625bf0814ef5dfce14e5df35cd4d75f23e540385e0e9
 
 name:           Proto-Quipper-M
 version:        0.1.0.0
@@ -33,6 +33,7 @@ library
       Language.Core
       Language.Interface
       Lib
+      TypeclassTesting
   other-modules:
       Paths_Proto_Quipper_M
   hs-source-dirs:

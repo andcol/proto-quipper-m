@@ -20,7 +20,7 @@ instance Match Qubit '[Qubit]
 --TODO Match for circuits with more than one input / classical input
 
 class HasTensor exp => HasCore exp where
-    label :: Label -> exp '[] Qubit --not sure '[] is correct
+    label :: Label -> exp γ Qubit --not sure γ is correct: should unify when eval is called??
     circuit :: (LabelledCircuit circ, Match Qubit insig, Match Qubit outsig)
                 => exp γ1 Qubit -> circ insig outsig -> exp γ2 Qubit -> exp '[] (Circ Qubit Qubit)
     apply :: forall (γ1 :: Ctx) (γ2 :: Ctx) (γ :: Ctx).
@@ -31,7 +31,7 @@ class HasTensor exp => HasCore exp where
 type instance Effect _ = Identity
 
 data CoreExp :: Sig where
-    Label :: Label -> CoreExp '[] Qubit
+    Label :: Label -> CoreExp γ Qubit
     Circuit :: (LabelledCircuit circ, Match Qubit insig, Match Qubit outsig)
                 => Deep γ1 Qubit -> circ insig outsig -> Deep γ2 Qubit -> CoreExp '[] (Circ Qubit Qubit)
     Apply :: forall (γ1 :: Ctx) (γ2 :: Ctx) (γ :: Ctx).

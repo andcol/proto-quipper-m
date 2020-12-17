@@ -63,8 +63,8 @@ instance FromLabelsAndSemantics lr sr lcr => FromLabelsAndSemantics (l ': lr) (w
 
 class MaxLabel (labels :: [Label]) (l :: Label) | labels -> l
 instance MaxLabel '[] 0
-instance (MaxLabel rl l', l' <= l, (l <=? l') ~ False) => MaxLabel (l : rl) l
-instance (MaxLabel rl l', l <= l') => MaxLabel (l : rl) l'
+instance (MaxLabel rl l', (l <=? l') ~ False) => MaxLabel (l : rl) l
+instance (MaxLabel rl l', (l <=? l') ~ True) => MaxLabel (l : rl) l'
 
 class MakeFreshLabel (lc :: LabelContext) (l :: Label) | lc -> l
 instance MakeFreshLabel '[] 0
@@ -89,10 +89,10 @@ class LabelledCircuit (circ :: LabelContext -> LabelContext -> *) where
                 FromLabelsAndSemantics outputs s q8, --q8 has the labels of outputs and the semantics of q4
                 --LabelsOf q8 outputs, --q8 has the labels of outputs...
                 --SemanticOf out q8, -- ...with the same semantics as q4 (i.e. wire types)
-                Merge q7 q8 q6) --q6 = q7 + q8
+                Merge q8 q7 q6) --q6 = q7 + q8
                 => circ q1 q2 -> Proxy targets -> circ q3 q4 -> (circ q1 q6, Proxy outputs) --TODO update signature
 
---REIFICATION OF LABELS
+--REIFICATION OF LABELS AND CONTEXTS
 
 class LabelList (l :: [Label]) where
     reifyLabels :: Proxy l -> [Int]
