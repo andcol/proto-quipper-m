@@ -3,7 +3,7 @@ module Language.Core where
 import Types
 import Classes
 import Interface
-import Circuit.Types
+import Circuit.LabelContext
 import Circuit.Class
 import DeepEmbedding
 
