@@ -9,19 +9,21 @@ import DeepEmbedding
 
 import Control.Monad.State.Lazy
 
+type UnderlyingCircuit = Circuit --choose the implementation of the circuit here!
+
 data BitSig exp = MkBit
-type Bit = MkLType MkBit
+type Bit = MkLType 'MkBit
 
 data QubitSig exp = MkQubit
-type Qubit = MkLType MkQubit
+type Qubit = MkLType 'MkQubit
 
 data CircSig exp = MkCirc exp exp
 type Circ t u = MkLType ('MkCirc t u)
 
 
-class (HasTensor exp, LabelledCircuit circ) => HasCore circ exp where
-    label :: Label -> exp γ Qubit --not sure γ is correct: should unify when eval is called??
-    circuit :: exp γ1 Qubit -> circ -> exp γ2 Qubit -> exp '[] (Circ Qubit Qubit)
+class HasTensor exp => HasCore exp where
+    label :: Label -> exp '[] Qubit --not sure γ is correct: should unify when eval is called??
+    circuit :: exp γ1 Qubit -> UnderlyingCircuit -> exp γ2 Qubit -> exp '[] (Circ Qubit Qubit)
     apply :: forall (γ1 :: Ctx) (γ2 :: Ctx) (γ :: Ctx).
                 CMerge γ1 γ2 γ => exp γ1 (Circ Qubit Qubit) -> exp γ2 Qubit -> exp γ Qubit
 
@@ -30,16 +32,15 @@ class (HasTensor exp, LabelledCircuit circ) => HasCore circ exp where
 
 --DEEP EMBEDDING
 
-type UnderlyingCircuit = Circuit --choose the implementation of the circuit here!
 type instance Effect _ = State UnderlyingCircuit 
 
 data CoreExp :: Sig where
-    Label :: Label -> CoreExp γ Qubit
+    Label :: Label -> CoreExp '[] Qubit
     Circuit :: Deep γ1 Qubit -> UnderlyingCircuit -> Deep γ2 Qubit -> CoreExp '[] (Circ Qubit Qubit)
     Apply :: forall (γ1 :: Ctx) (γ2 :: Ctx) (γ :: Ctx).
                 CMerge γ1 γ2 γ => Deep γ1 (Circ Qubit Qubit) -> Deep γ2 Qubit -> CoreExp γ Qubit
 
-instance HasCore UnderlyingCircuit Deep where
+instance HasCore Deep where
     label = Dom . Label
     circuit l c l' = Dom $ Circuit l c l'
     apply c l = Dom $ Apply c l

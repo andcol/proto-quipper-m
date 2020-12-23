@@ -4,4 +4,4 @@ import Interface
 
 import Language.Core
 
-type PQM circ exp = (HasLolli exp, HasCore circ exp)
+type PQM circ exp = (HasLolli exp, HasCore exp)
