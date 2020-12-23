@@ -2,11 +2,16 @@ module Circuit.Dynamic.Class where
 
 import Circuit.Gate
 import Control.Monad.State.Lazy
+import Data.Tuple
 
 type Label = Int 
 
 type LabelContext = [(Label,WireType)]
 
+labelsOf :: LabelContext -> [Label]
+labelsOf = map fst
+semanticsOf :: LabelContext -> [WireType]
+semanticsOf = map snd
 
 class LabelledCircuit circ where
     fromGate :: Gate sig -> circ

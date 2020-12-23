@@ -1,0 +1,13 @@
+ROADMAP
+
+>
+
+
+FIXES
+
+>
+
+
+IMPROVEMENTS (performance, aesthetics, etc.)
+
+> [performance] Use of appends ends up generating bigger labels than necessary

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0fb190652e213075e82e21edfc33efa6906cd1e5f5102baad54526036948ce4a
+-- hash: 894132d11f1970474793b59bd54751aff37efd380de1514eee31bdc741abf3e5
 
 name:           Proto-Quipper-M
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Circuit.Dynamic.Class
+      Circuit.Dynamic.Naive
       Circuit.Gate
       Language.Core
       Language.Interface
