@@ -78,7 +78,7 @@ instance LabelledCircuit Circuit where
 
     append c targets d = case maybeAppend c targets d of
         Just x -> x
-        Nothing -> undefined
+        Nothing -> error "application in which some targets do not exist or are of the wrong type" --not very Haskell of mine
 
 hadamard :: Int -> Circuit
 hadamard 1 = fromGate H

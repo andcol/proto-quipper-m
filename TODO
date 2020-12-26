@@ -1,8 +1,9 @@
 MAIN
 
-> extend core so that circuits can be applied to multiple qubits at a time
+> enforce linearity of same-id labels (the very meaning of Q)
 > implement force/lift
 > implement box
+> implement bit (perhaps?)
 
 
 FIXES
@@ -14,3 +15,4 @@ IMPROVEMENTS (performance, aesthetics, etc.)
 
 > [usefulness] return choice of circuit implementation to "frontend" (i.e. let the user choose)
 > [performance] Use of appends ends up generating bigger labels than necessary
+> [haskellness] Implement proper error handling instead of using "error"
