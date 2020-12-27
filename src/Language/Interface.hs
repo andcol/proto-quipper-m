@@ -4,5 +4,6 @@ import Interface
 
 import Language.Core
 import Language.Lift
+import Language.Box
 
-type PQM circ exp = (HasLolli exp, HasCore exp, HasLift exp)
+type PQM exp = (HasLolli exp, HasTensor exp, HasCore exp, HasLift exp, HasBox exp)
