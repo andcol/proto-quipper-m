@@ -14,6 +14,7 @@ semanticsOf :: LabelContext -> [WireType]
 semanticsOf = map snd
 
 class LabelledCircuit circ where
+    identity :: LabelContext -> circ
     fromGate :: Gate sig -> circ
     append :: circ -> [Label] -> circ -> (circ, [Label])
 

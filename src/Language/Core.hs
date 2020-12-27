@@ -84,12 +84,12 @@ test1 :: IO () --tests single-qubit gate application
 test1 = do
     let expr = apply @Deep (circuit (label 0) (fromGate H) (label 1)) (label 0)
     let res = eval expr eEmpty
-    let (_,s) = runState res (Identity [(0,Qubit)])
+    let (_,s) = runState res (identity [(0,Qubit)])
     print s
 
 test2 :: IO () --test two-qubit gate application
 test2 = do
     let expr = apply @Deep (circuit ((label 0) ⊗ (label 1)) (hadamard 2) ((label 2) ⊗ (label 3))) ((label 0) ⊗ (label 1))
     let res = eval expr eEmpty
-    let (_,s) = runState res (Identity [(0,Qubit),(1,Qubit)])
+    let (_,s) = runState res (identity [(0,Qubit),(1,Qubit)])
     print s

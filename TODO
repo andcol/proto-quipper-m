@@ -1,7 +1,6 @@
 MAIN
 
 > enforce linearity of same-id labels (the very meaning of Q)
-> implement force/lift
 > implement box
 > implement bit (perhaps?)
 

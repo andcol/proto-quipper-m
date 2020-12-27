@@ -72,6 +72,8 @@ maybeAppend c targets d = do
         c `concat` (d' :+ gate) = (c `concat` d') :+ gate
 
 instance LabelledCircuit Circuit where
+    identity = Identity
+    
     fromGate H = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], H, [(1,Qubit)]) --could simplify if constraints on unarity or so
     fromGate X = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], X, [(1,Qubit)])
     fromGate (R m) = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], (R m), [(1,Qubit)])

@@ -48,12 +48,12 @@ test1 :: IO () --simple "force (lift n)" scenario
 test1 = do
     let expr = force @Deep $ lift $ label 0 --should not work, but for now labels are typed without Q
     let res = eval expr eEmpty
-    let (v,_) = runState res (Identity [(0,Qubit)]) --initial state is irrelevant
+    let (v,_) = runState res (identity [(0,Qubit)]) --initial state is irrelevant
     print v
 
 test2 :: IO () --same scenario but with inner evaluation
 test2 = do
     let expr = force @Deep $ lift $ apply (circuit (label 0) (fromGate H) (label 1)) (label 0) --again, should not work, but for now labels are typed without Q
     let res = eval expr eEmpty
-    let vs = runState res (Identity [(0,Qubit)])
+    let vs = runState res (identity [(0,Qubit)])
     print vs
