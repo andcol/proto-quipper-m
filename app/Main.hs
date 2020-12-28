@@ -12,8 +12,9 @@ import Circuit.Dynamic.Naive
 import Language.Interface
 import Language.Core as Core
 import Language.Lift as Lift
+import Language.Box as Box
 
 
 main :: IO ()
-main = Lift.test2
+main = Box.test2
 
