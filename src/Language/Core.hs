@@ -19,10 +19,10 @@ data CircSig exp = MkCirc exp exp
 type Circ t u = MkLType ('MkCirc t u)
 
 class MType (exp :: Sig) (t :: LType) where
-    labels :: LVal exp t -> [Label]
-    signature :: LVal exp t -> [WireType]
-    fromLabelContext :: LabelContext -> LVal exp t
-    toLabelContext :: LVal exp t -> LabelContext
+    labels :: LVal exp t -> [Label] --extracts the labels of a value of MType T
+    signature :: LVal exp t -> [WireType] --extracts a runtime representation (WireType) of the MType T of a value
+    fromLabelContext :: LabelContext -> exp '[] t --constructs a value of MType T from a label context TODO should not be '[]
+    toLabelContext :: LVal exp t -> LabelContext --retrieves the label context Q such that \emptyset;Q |- \vec\ell : T
     toLabelContext vl = zip (labels vl) (signature vl)
 
 class HasTensor exp => HasCore exp where
@@ -30,8 +30,7 @@ class HasTensor exp => HasCore exp where
     circuit :: (MType exp t, MType exp u) => exp '[] t -> UnderlyingCircuit -> exp '[] u -> exp '[] (Circ t u)
     apply :: (MType exp t, MType exp u, CMerge γ1 γ2 γ) => exp γ1 (Circ t u) -> exp γ2 t -> exp γ u
 
-    --only unary gates for now, could extend with KnownLabelVector l and l instead of Qubit
-    --technically the labels in (l,D,l') CANNOT be any term of type Qubit, they should be values, how do I encode that?
+    --technically the labels in (l,D,l') cannot be ANY term of type Qubit, they should be values, how do I encode that?
 
 --DEEP EMBEDDING
 
@@ -55,11 +54,11 @@ data instance LVal Deep (Circ t u)  where
 instance MType Deep Qubit where
     labels (VLabel id) = [id]
     signature _ = [Qubit]
-    fromLabelContext [(l,Qubit)] = VLabel l
+    fromLabelContext [(l,Qubit)] = Dom $ Label l
 instance (MType Deep t) => MType Deep (Qubit ⊗ t) where
     labels (VPair (VLabel id) x) = id : (labels x)
     signature (VPair _ r) = Qubit : (signature r)
-    fromLabelContext ((l,Qubit):lcr) = VPair (VLabel l) (fromLabelContext lcr)
+    fromLabelContext ((l,Qubit):lcr) = Dom $ Pair (Dom $ Label l) (fromLabelContext lcr)
 
 
 instance Domain CoreExp where
@@ -74,7 +73,8 @@ instance Domain CoreExp where
         VCirc l d l' <- eval circuit ρ1
         targetVec <- eval targets ρ2
         outputVec <- appendM (labels targetVec) d
-        return $ fromLabelContext (zip outputVec (signature l'))
+        let out = fromLabelContext (zip outputVec (signature l'))
+        eval out eEmpty
         where
             (ρ1,ρ2) = splitECtx @γ1 @γ2 ρ
 
