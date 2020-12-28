@@ -30,14 +30,13 @@ instance HasLift Deep where
     force = Dom . Force
 
 data instance LVal Deep (Bang a) where
-    VLift :: ECtx Deep γ -> Deep γ a -> LVal Deep (Bang a) --a lift-value is a closure just like a lambda-abstraction value, but it is always empty
+    VLift :: Deep '[] a -> LVal Deep (Bang a) --a lift-value is a closure just like a lambda-abstraction value, but it is always empty
 
 instance Domain LiftExp where
-    evalDomain (Lift m) ρ = return $ VLift ρ m
+    evalDomain (Lift m) _ = return $ VLift m
     evalDomain (Force m) ρ = do
-        (VLift ρ' n) <- eval m ρ
-        v <- eval n ρ'
-        return v
+        VLift n <- eval m ρ
+        eval n eEmpty
 
 --TESTS
 
