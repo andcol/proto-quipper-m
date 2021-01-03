@@ -44,11 +44,10 @@ class MType (exp :: Sig) (t :: LType) where
     toLabelContext vl = zip (labels vl) (signature vl)
 
 class HasTensor exp => HasCore exp where
-    label :: StaticLabel label => Proxy label -> exp '[ '(label, Qubit) ] Qubit --not sure γ is correct: should unify when eval is called??
+    label :: StaticLabel label => Proxy label -> exp '[ '(label, Qubit) ] Qubit
     circuit :: (MType exp t, MType exp u) => LVal exp t -> UnderlyingCircuit -> LVal exp u -> exp '[] (Circ t u)
     apply :: (MType exp t, MType exp u, CMerge γ1 γ2 γ) => exp γ1 (Circ t u) -> exp γ2 t -> exp γ u
 
-    --technically the labels in (l,D,l') cannot be ANY term of type Qubit, they should be values, how do I encode that?
 
 --DEEP EMBEDDING
 
