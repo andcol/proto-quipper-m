@@ -4,7 +4,31 @@ import Circuit.Gate
 import Control.Monad.State.Lazy
 import Data.Tuple
 
-type Label = Int 
+import GHC.TypeLits
+import Data.Proxy
+
+type Label = Int
+
+type StaticLabel label = KnownNat label
+
+l0 :: Proxy 0
+l0 = Proxy
+l1 :: Proxy 1
+l1 = Proxy
+l2 :: Proxy 2
+l2 = Proxy
+l3 :: Proxy 3
+l3 = Proxy
+l4 :: Proxy 4
+l4 = Proxy
+l5 :: Proxy 5
+l5 = Proxy
+l6 :: Proxy 6
+l6 = Proxy
+--etc...
+
+reifyLabel :: forall l. StaticLabel l => Proxy l -> Int
+reifyLabel = fromIntegral . natVal
 
 type LabelContext = [(Label,WireType)]
 

@@ -1,15 +1,14 @@
 MAIN
 
+> [correctness] enforce linearity of same-id labels (the very meaning of Q)
+    -consider having a value l and l' instead of a term l and l' in a circuit in core (should solve LabelsOnly γ1 problem, is more correct)
 > [test] box
 > [feature] implement bit (perhaps?)
 
 
 FIXES
 
-> [correctness] enforce linearity of same-id labels (the very meaning of Q)
-> [correctness] enforce empty linear context in Lift
-> [decency] freshLabel should be implemented better
-> [decency] should not use undefined to get a [WireType] out of MType t in Box
+> [decency] freshLabel should be implemented better (box)
 
 
 IMPROVEMENTS
