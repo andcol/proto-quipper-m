@@ -1,7 +1,7 @@
 MAIN
 
 > [correctness] enforce linearity of same-id labels (the very meaning of Q)
-    -consider having a value l and l' instead of a term l and l' in a circuit in core (should solve LabelsOnly γ1 problem, is more correct)
+> [usability] look into Template Haskell for icky compile-time stuff (e.g. static vs. dynamic labels)
 > [test] box
 > [feature] implement bit (perhaps?)
 
