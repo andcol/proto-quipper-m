@@ -1,5 +1,6 @@
 module Language.Core where
 
+import Prelude hiding ((^))
 import Types
 import Classes
 import Interface
@@ -13,18 +14,6 @@ import Control.Monad.State.Lazy
 import Data.Proxy
 import GHC.TypeLits
 import Unsafe.Coerce
-
---PRELIMINARIES (needed for reification of type contexts)
-class LabelsOnly (γ :: Ctx) where
-    reify :: Proxy γ -> LabelContext
-    trivialECtx :: Proxy γ -> ECtx Deep γ
-instance LabelsOnly '[] where
-    reify _ = []
-    trivialECtx _ = eEmpty
-instance (KnownNat x, LabelsOnly γ') => LabelsOnly ('(x,Qubit) : γ') where
-    reify _ = (reifyLabel (Proxy :: Proxy x),Qubit) : (reify (Proxy :: Proxy γ'))
-    trivialECtx _ = let x = addECtx (Proxy :: Proxy x) (VLabel $ reifyLabel (Proxy :: Proxy x)) (trivialECtx (Proxy :: Proxy γ')) in
-        unsafeCoerce x :: ECtx Deep ('(x,Qubit) : γ') --TODO this has to be THOROUGHLY verified
 
 --DECLARATION
 
@@ -107,3 +96,24 @@ test2 = do
     let res = eval expr (addECtx l1 (VLabel 1) $ addECtx l0 (VLabel 0) eEmpty)
     let (_,s) = runState res (identity [(0,Qubit),(1,Qubit)])
     print s
+
+test3 :: IO () --like test 2. Circuit produced is equivalent up to a renaming of (output) labels
+test3 = do
+    let expr = apply @Deep (circuit (VLabel 0) (fromGate H) (VLabel 1)) (label l0) ⊗ apply (circuit (VLabel 0) (fromGate H) (VLabel 1)) (label l1)
+    let res = eval expr (addECtx l1 (VLabel 1) $ addECtx l0 (VLabel 0) eEmpty)
+    let (_,s) = runState res (identity [(0,Qubit),(1,Qubit)])
+    print s
+
+--test4 :: IO () --like test 3, but violates linear constraints (does not compile)
+--test4 = do
+--    let expr = apply @Deep (circuit (VLabel 0) (fromGate H) (VLabel 1)) (label l0) ⊗ apply (circuit (VLabel 0) (fromGate H) (VLabel 1)) (label l0)
+--    let res = eval expr (addECtx l1 (VLabel 1) $ addECtx l0 (VLabel 0) eEmpty)
+--    let (_,s) = runState res (identity [(0,Qubit),(1,Qubit)])
+--    print s
+
+test5 :: IO () --This shows that abstractions successfully steer clear of capturing labels, so the context injection trick makes sense
+test5  = do
+    let expr = λ $ \x -> letUnit x (apply @Deep (circuit (VLabel 0) (fromGate H) (VLabel 1)) (label l0))
+    let res = eval expr (addECtx l0 (VLabel 0) eEmpty)
+    let out = runState res (identity [(0,Qubit)])
+    print "ok"

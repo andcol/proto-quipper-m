@@ -16,86 +16,106 @@ import Language.Lift
 import Control.Monad.State.Lazy hiding (lift)
 
 import GHC.TypeLits
+import Data.Proxy
+import Unsafe.Coerce
+import Data.Type.Bool
+import Data.Type.Equality hiding (apply)
 
 --PRELIMINARIES (needed for reification of type contexts)
+class KnownCtx (γ :: Ctx) where
+    reify :: forall proxy. proxy γ -> LabelContext
+    trivialECtx :: forall proxy. proxy γ -> ECtx Deep γ
+instance KnownCtx '[] where
+    reify _ = []
+    trivialECtx _ = eEmpty
+instance (KnownNat x, KnownCtx γ') => KnownCtx ('(x,Qubit) : γ') where
+    reify _ = (reifyLabel (Proxy :: Proxy x),Qubit) : (reify (Proxy :: Proxy γ'))
+    trivialECtx _ = let x = addECtx (Proxy :: Proxy x) (VLabel $ reifyLabel (Proxy :: Proxy x)) (trivialECtx (Proxy :: Proxy γ')) in
+        unsafeCoerce x :: ECtx Deep ('(x,Qubit) : γ') --TODO this has to be THOROUGHLY verified
 
-type family FreshLabel (γ :: Ctx) :: Ctx where
-    FreshLabel '[] = '[ '(1,Qubit) ] --TODO only qubit for now, consider other cases
+class (KnownCtx γ, MType Deep t) => LabelCtx (γ :: Ctx) (t :: LType) | γ -> t where
+    labelVector :: forall proxy. proxy γ -> Deep γ t
+instance KnownNat x => LabelCtx '[ '(x, Qubit) ] Qubit where
+    labelVector _ = label (Proxy :: Proxy x)
+    
+
+type family FreshLabel (γ :: Ctx) :: Nat where
+    FreshLabel '[] = 0
+    FreshLabel '[ '(x,t) ] = x+1
     FreshLabel ('(x,t) : γ') = FreshLabel γ' --Ctx's are ordered
+
+type family FreshLabels (γ :: Ctx) (n :: Nat) :: [Nat] where
+    FreshLabels γ 1 = '[FreshLabel γ]
+    FreshLabels γ n = LabelRange (FreshLabel γ) n
+
+type family FreshLabelContext (γ :: Ctx) (t :: LType) :: Ctx where
+    FreshLabelContext γ t = Zip (FreshLabels γ (MLen t)) (ToList t)
+
+type family MTypeOf (γ :: Ctx) :: LType where
+    MTypeOf '[] = One --sadly necessary for the implementation of labelVector
+    MTypeOf '[ '(x,Qubit) ] = Qubit
+    MTypeOf ('(x,Qubit) : r) = Qubit ⊗ (MTypeOf r)
+
+type family LabelRange (start :: Nat) (n :: Nat) :: [Nat] where
+    LabelRange start 1 = '[start]
+    LabelRange start n = start ': (LabelRange (start + 1) (n - 1))
 
 type family (++) (list1 :: [a]) (list2 :: [a]) :: [a] where
     '[] ++ list2 = list2
     list1 ++ '[] = list1
     (e ': rl) ++ list2 = e ': (rl ++ list2)
 
-type family FreshLabels (γ :: Ctx) (n :: Nat) :: Ctx where
-    FreshLabels γ 1 = FreshLabel γ
-    FreshLabels γ n = (FreshLabels γ (n-1)) ++ (FreshLabel (FreshLabels γ (n-1))) --TODO terribly inefficient
+type family Zip (l1 :: [a]) (l2 :: [b]) :: [(a,b)] where
+    Zip '[] l2 = '[]
+    Zip l1 '[] = '[]
+    Zip (e1 ': r1) (e2 ': r2) = '(e1,e2) ': (Zip r1 r2)
+
+type family MLen (t :: LType) :: Nat where
+    MLen Qubit = 1
+    MLen (Qubit ⊗ t') = (MLen t') + 1
+
+type family ToList (t :: LType) :: [LType] where
+    ToList Qubit = '[Qubit]
+    ToList (Qubit ⊗ t') = Qubit ': (ToList t')
 
 
 --DECLARATION
 
 class (HasCore exp, HasLift exp, HasLolli exp) => HasBox (exp :: Sig) where
-    box :: (MType exp t, MType exp u) => [WireType] -> exp γ (Bang (t ⊸ u)) -> exp γ (Circ t u)
+    box :: forall (t :: LType) (u :: LType) (γ :: Ctx).
+            (MType Deep t, MType Deep u, KnownCtx γ,
+            LabelCtx (Zip (FreshLabels γ (MLen t)) (ToList t)) t,
+            MergeF (Zip (FreshLabels γ (MLen t)) (ToList t)) '[] ~ Zip (FreshLabels γ (MLen t)) (ToList t),
+            Types.Div (Zip (FreshLabels γ (MLen t)) (ToList t)) (Zip (FreshLabels γ (MLen t)) (ToList t)) ~ '[])
+                => exp γ (Bang (t ⊸ u)) -> exp γ (Circ t u)
 
 --DEEP EMBEDDING
 
 data BoxExp :: Sig where
-    Box :: (MType Deep t, MType Deep u) => [WireType] -> Deep γ (Bang (t ⊸ u)) -> BoxExp γ (Circ t u)
+    Box :: forall (t :: LType) (u :: LType) (γ :: Ctx).
+            (MType Deep t, MType Deep u, KnownCtx γ,
+            LabelCtx (Zip (FreshLabels γ (MLen t)) (ToList t)) t,
+            MergeF (Zip (FreshLabels γ (MLen t)) (ToList t)) '[] ~ Zip (FreshLabels γ (MLen t)) (ToList t),
+            Types.Div (Zip (FreshLabels γ (MLen t)) (ToList t)) (Zip (FreshLabels γ (MLen t)) (ToList t)) ~ '[])
+                => Deep γ (Bang (t ⊸ u)) -> BoxExp γ (Circ t u)
 
 instance HasBox Deep where
-    box t m = Dom $ Box t m
+    box = Dom . Box
+
 
 instance Domain BoxExp where
-    evalDomain (Box t (m :: Deep γ (Bang (t ⊸ u)))) ρ = undefined --do
-        --VLift n <- eval m ρ
-        --let q = zip (freshLabels n (length t)) t
-        --let lTerm = fromLabelContext q
-        --l <- eval lTerm eEmpty
-        --let subroutine = n ^ lTerm
-        --let res = eval subroutine eEmpty
-        --let (l',d) = runState res (identity q)
-        --return $ VCirc l d l'
-        ----this function is such a mess
+    evalDomain (Box (m :: Deep γ (Bang (t ⊸ u)))) ρ = do
+        VLift n <- eval m ρ
+        --begin subroutine
+        let q = Proxy :: Proxy (FreshLabelContext γ t)
+        let vecell = unsafeCoerce $ labelVector q :: Deep (FreshLabelContext γ t) t
+        let subroutine = n ^ vecell --find a workaround to convince GHC that vecell has type t
+        let res = eval subroutine (trivialECtx q)
+        let (l',d) = runState res (identity $ reify q)
+        --end subroutine
+        l <- eval vecell (trivialECtx q) --little more than a formality (vecell is basically already a value)
+        return $ VCirc l d l'
 
-
---FRESHLABELS
---I don't like this solution, it feels wrong
---At the same time I haven't found a better solution for this problem in Haskell
---But I refuse to believe there isn't one
-
---freshLabel :: Deep γ τ -> Label
---freshLabel (Var _) = 0
---freshLabel (Dom e) = freshLabelDom e
---
---freshLabels :: Deep γ τ -> Int -> [Label]
---freshLabels e n = let start = freshLabel e in [start + i | i <- [0..n-1]]
---
---class DomainWithLabels (dom :: Sig) where
---    freshLabelDom :: dom γ τ -> Label
---
---instance DomainWithLabels CoreExp where
---    freshLabelDom (Label id) = id+1
---    freshLabelDom (Circuit _ _ _) = 0
---    freshLabelDom (Apply m n) = max (freshLabel m) (freshLabel n)
---
---instance DomainWithLabels LiftExp where
---    freshLabelDom (Lift m) = freshLabel m
---    freshLabelDom (Force m) = freshLabel m
---
---instance DomainWithLabels BoxExp where
---    freshLabelDom (Box _ m) = freshLabel m
---
---instance DomainWithLabels TensorExp where
---    freshLabelDom (Pair m n) = max (freshLabel m) (freshLabel n)
---    freshLabelDom (LetPair _ _ m n) = max (freshLabel m) (freshLabel n)
---
---instance DomainWithLabels LolliExp where
---    freshLabelDom (Abs _ m) = freshLabel m
---    freshLabelDom (App m n) = max (freshLabel m) (freshLabel n)
---
---instance (Domain dom) => DomainWithLabels dom where --sort of a default
---    freshLabelDom _ = 0
 
 --TESTS
 
@@ -105,16 +125,16 @@ instance (Show (LVal Deep l), Show (LVal Deep r)) => Show (LVal Deep (l ⊗ r)) 
 instance (Show (LVal Deep i), Show (LVal Deep o)) => Show (LVal Deep (Circ i o)) where
     show (VCirc l d l') = "(" ++ (show l) ++ ", " ++ (show d) ++ ", " ++ (show l') ++ ")"
 
---test1 :: IO () --tests single-qubit gate application and boxing
---test1 = do
---    let expr = box [Qubit] $ lift $ λ $ \l -> apply @Deep (circuit (label 0) (fromGate H) (label 1)) l
---    let res = eval expr eEmpty
---    let (v,s) = runState res (identity [(0,Qubit)])
---    print v
---
+test1 :: IO () --tests single-qubit gate application and boxing
+test1 = do
+    let expr = box @Deep $ lift $ λ $ \l -> apply (circuit (VLabel 0) (fromGate H) (VLabel 1)) l
+    let res = eval expr eEmpty
+    let out = runState res (identity [(0,Qubit)])
+    print out
+
 --test2 :: IO () --test two-qubit gate application and boxing
 --test2 = do
---    let expr = box [Qubit, Qubit] $ lift $ λ $ \l -> apply @Deep (circuit ((label 0) ⊗ (label 1)) (hadamard 2) ((label 2) ⊗ (label 3))) l
+--    let expr = box @Deep $ lift $ λ $ \l -> apply (circuit ((VLabel 0) `VPair` (VLabel 1)) (hadamard 2) ((VLabel 2) `VPair` (VLabel 3))) l
 --    let res = eval expr eEmpty
 --    let (v,s) = runState res (identity [(0,Qubit),(1,Qubit)])
 --    print v

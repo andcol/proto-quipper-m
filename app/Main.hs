@@ -16,5 +16,5 @@ import Language.Box as Box
 
 
 main :: IO ()
-main = Lift.test1
+main = Box.test1
 
