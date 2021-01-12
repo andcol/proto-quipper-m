@@ -9,11 +9,11 @@ import Circuit.Gate
 import Circuit.Dynamic.Class
 import Circuit.Dynamic.Naive
 
-import Language.Core as Core
-import Language.Lift as Lift
-import Language.Box as Box
+import Examples.Core as Core
+import Examples.Lift as Lift
+import Examples.Box as Box
 
 
 main :: IO ()
-main = Box.test1
+main = Box.test2
 

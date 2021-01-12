@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5018b7188c5955712e45a6bed1d95e12bf12909a1e44cab30795bb23fc346fe5
+-- hash: dcb2f53912d0efd8a3ffd9396727b5f777b0a3898adf63007f4ae4ad89a604d9
 
 name:           Proto-Quipper-M
 version:        0.1.0.0
@@ -30,6 +30,9 @@ library
       Circuit.Dynamic.Class
       Circuit.Dynamic.Naive
       Circuit.Gate
+      Examples.Box
+      Examples.Core
+      Examples.Lift
       Language.Box
       Language.Core
       Language.LabelContexts
