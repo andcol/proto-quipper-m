@@ -11,14 +11,19 @@ data Gate (sig :: [WireType]) where
     H :: Gate '[Qubit]
     X :: Gate '[Qubit]
     R :: Int -> Gate '[Qubit]
+    C :: Gate sig -> Gate (Qubit : sig)
     --more later
 
 instance Show (Gate sig) where
     show H = "H"
     show X = "X"
     show (R m) = "R" ++ (showSubscript m)
+    show (C X) = "CNOT"
+    show (C g) = "C" ++ (show g)
 
 instance Eq (Gate sig) where
     H == H = True
     X == X = True
     (R m) == (R k) = m == k
+    (C g) == (C h) = g == h
+    g == h = False
