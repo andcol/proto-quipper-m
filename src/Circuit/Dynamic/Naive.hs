@@ -7,9 +7,13 @@ import Control.Monad
 
 data Circuit = Identity LabelContext | forall sig. Circuit :+ (LabelContext, Gate sig, LabelContext) 
 
+showlc :: LabelContext -> String
+showlc [(l,_)] = show l
+showlc ((l,_):r) = (show l) ++ ", " ++ (showlc r)
+
 instance Show Circuit where
-    show (Identity lc) = "in:" ++ (show lc)
-    show (c :+ (lc1,g,lc2)) =  (show c) ++ "; " ++ "(" ++ (show lc1) ++ "," ++ (show g) ++ "," ++ (show lc2) ++ ")"
+    show (Identity lc) = "Input wires: " ++ (showlc lc)
+    show (c :+ (lc1,g,lc2)) =  (show c) ++ "\n" ++ (showlc lc2) ++ " ← " ++ (show g) ++ " " ++ (showlc lc1)
 
 latestLabel :: Circuit -> Label
 latestLabel (Identity lc) = let (labels,_) = unzip lc in maximum labels
