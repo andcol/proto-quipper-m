@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dcb2f53912d0efd8a3ffd9396727b5f777b0a3898adf63007f4ae4ad89a604d9
+-- hash: 6e3699b08bcb8c9bed4e40073a26400973259e9d8127abb705d9a6bae613f318
 
 name:           Proto-Quipper-M
 version:        0.1.0.0
@@ -33,6 +33,7 @@ library
       Examples.Box
       Examples.Core
       Examples.Lift
+      Examples.Quipper
       Language.Box
       Language.Core
       Language.LabelContexts
