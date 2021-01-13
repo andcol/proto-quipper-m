@@ -19,6 +19,13 @@ import Data.Type.Bool
 class KnownCtx (γ :: Ctx) where
     reify :: forall proxy. proxy γ -> LabelContext
     trivialECtx :: forall proxy. proxy γ -> ECtx Deep γ
+
+exp2LabelContext :: KnownCtx γ => Deep γ t -> LabelContext
+exp2LabelContext (_ :: Deep γ t) = reify (Proxy :: Proxy γ)
+
+exp2ECtx :: KnownCtx γ => Deep γ t -> ECtx Deep γ
+exp2ECtx (_ :: Deep γ t) = trivialECtx (Proxy :: Proxy γ)
+
 instance KnownCtx '[] where
     reify _ = []
     trivialECtx _ = eEmpty
