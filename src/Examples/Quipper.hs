@@ -23,30 +23,28 @@ import Language.Box
 
 import Data.Proxy
 import Language.LabelContexts
+import GHC.TypeLits
 
 
-plusMinus :: Bool -> (Circuit, Deep '[ '(0,Qubit) ] Qubit)
-plusMinus b = let exp = apply (circuit (VLabel 0) (fromGate H) (VLabel 1)) input in (identity [(0,Qubit)], exp) where
+plusMinus :: Bool -> Deep '[ '(0,Qubit) ] Qubit
+plusMinus b = apply (circuit (VLabel 0) (fromGate H) (VLabel 1)) input where
     input = case b of
         True -> (apply (circuit (VLabel 0) (fromGate X) (VLabel 1))) (label l0)
         False -> label l0
 
-plusMinus' :: Bool -> (Circuit, State Circuit (LVal Deep Qubit))
-plusMinus' b = let  exp = apply (circuit (VLabel 0) (fromGate H) (VLabel 1)) input
-                    res = eval exp (exp2ECtx exp)
-                    in (identity (exp2LabelContext exp), res) where
-    input = case b of
-        True -> (apply (circuit (VLabel 0) (fromGate X) (VLabel 1))) (label l0)
-        False -> label l0
+share :: Deep '[ '(0,Qubit) ] Qubit -> Deep '[ '(0,Qubit), '(1,Qubit) ] (Qubit ⊗ Qubit) --TODO this should be more general!
+share exp = apply
+            (circuit (VLabel 0 `VPair` VLabel 1) (fromGate (C X)) (VLabel 2 `VPair` VLabel 3))
+            (exp ⊗ label l1)
 
-test :: IO ()
-test = do
-    let (circ, exp) = plusMinus False
+bell00 :: Deep '[ '(0,Qubit),'(1,Qubit) ] (Qubit ⊗ Qubit)
+bell00 = let a = plusMinus False in share a
+
+printCirc :: KnownCtx γ => Deep γ t -> IO () --Generate and print a circuit as a string
+printCirc (exp :: Deep γ t) = do
     let res = eval exp (exp2ECtx exp)
-    let (v,c) = runState res circ
+    let (_,c) = runState res (identity $ exp2LabelContext exp)
     print c
 
-test' :: IO ()
-test' = do
-    let (circ, v) = plusMinus' True
-    print $ snd $ runState v circ
+test :: IO ()
+test = printCirc $ bell00

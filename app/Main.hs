@@ -16,5 +16,5 @@ import Examples.Quipper as Quipper
 
 
 main :: IO ()
-main = Quipper.test'
+main = Quipper.test
 
