@@ -81,10 +81,21 @@ instance LabelledCircuit Circuit where
     fromGate H = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], H, [(1,Qubit)]) --could simplify if constraints on unarity or so
     fromGate X = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], X, [(1,Qubit)])
     fromGate (R m) = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], (R m), [(1,Qubit)])
+    fromGate (C g) = let    (Identity _) :+ (lci, _, lco) = fromGate g --this case is so messy, it could be refactored
+                            lci' = (0,Qubit) : (shift 1 lci)
+                            fstlco = let (i,_):_ = lco in i
+                            fstlco' = (maxindex lci') + 1
+                            lco' = (fstlco',Qubit) : (shift (fstlco' - fstlco + 1) lco) in
+                                (Identity lci') :+ (lci', (C g), (lco'))
+                                where
+                                shift _ [] = []
+                                shift n ((i,x):r) = (i+n,x):(shift n r)
+                                maxindex [(i,_)] = i
+                                maxindex ((i,_):r) = max i (maxindex r)
 
     append c targets d = case maybeAppend c targets d of
         Just x -> x
-        Nothing -> error "application in which some targets do not exist or are of the wrong type" --not very Haskell of mine
+        Nothing -> error "application in which some targets do not exist or are of the wrong type" --not very Haskell of me
 
 hadamard :: Int -> Circuit
 hadamard 1 = fromGate H

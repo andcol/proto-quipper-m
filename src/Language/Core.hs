@@ -72,7 +72,9 @@ instance Domain CoreExp where
     evalDomain (Circuit l c l') eEmpty =
         if (toLabelContext l) == (inputsOf c) && (toLabelContext l') == (outputsOf c) --akin to the compile-time check "c ∈ Mℒ(Q,Q') where Q and Q' type vl and vl' in t and u respectively"
             then return $ VCirc l c l'
-            else error "mismatch between term-level labels and actual circuit labels"
+            else error ("mismatch between term-level labels and actual circuit labels: "
+                        ++ (show $ toLabelContext l) ++ " vs. " ++ (show $ inputsOf c) ++ " and "
+                        ++ (show $ toLabelContext l') ++ " vs. " ++ (show $ outputsOf c) ++ ".")
     evalDomain (Apply (circuit :: Deep γ1 (Circ t u)) (targets :: Deep γ2 t)) ρ = do
         VCirc l d l' <- eval circuit ρ1
         targetVec <- eval targets ρ2
