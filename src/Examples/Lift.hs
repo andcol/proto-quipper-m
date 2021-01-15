@@ -1,15 +1,13 @@
 module Examples.Lift where
 
-import Types
-import Interface hiding (lift, force)
-import DeepEmbedding
+import LNLHask
 import Circuit.Gate
 import Circuit.Dynamic.Class
 import Circuit.Dynamic.Naive
+import Language.Lift
 
 import Control.Monad.State.Lazy hiding (lift)
 
-import Language.Lift
 
 instance Show (LVal Deep (a ⊸ b)) where
     show _ = "[function]"

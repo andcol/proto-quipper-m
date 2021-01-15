@@ -1,8 +1,6 @@
 module Examples.Box where
 
-import Types
-import Interface hiding (lift)
-import DeepEmbedding
+import LNLHask
 import Circuit.Gate
 import Circuit.Dynamic.Class
 import Circuit.Dynamic.Naive

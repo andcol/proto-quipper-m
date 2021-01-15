@@ -1,15 +1,13 @@
 module Examples.Core where
 
-import Types
-import Interface
-import DeepEmbedding
+import LNLHask
 import Circuit.Gate
 import Circuit.Dynamic.Class
 import Circuit.Dynamic.Naive
+import Language.Core
 
 import Control.Monad.State.Lazy
 
-import Language.Core
 
 test1 :: IO () --tests single-qubit gate application
 test1 = do
