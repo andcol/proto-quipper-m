@@ -12,8 +12,10 @@ showlc [(l,_)] = show l
 showlc ((l,_):r) = (show l) ++ ", " ++ (showlc r)
 
 instance Show Circuit where
-    show (Identity lc) = "Input wires: " ++ (showlc lc)
-    show (c :+ (lc1,g,lc2)) =  (show c) ++ "\n" ++ (showlc lc2) ++ " ← " ++ (show g) ++ " " ++ (showlc lc1)
+    show c = "Input wires: " ++ (showlc $ inputsOf c) ++ "\n" ++ (show' c) ++ "Output wires: " ++ (showlc $ outputsOf c)
+                where
+            show' (Identity lc) = ""
+            show' (c :+ (lc1,g,lc2)) =  (show' c) ++ (showlc lc2) ++ " ← " ++ (show g) ++ " " ++ (showlc lc1) ++ "\n"
 
 latestLabel :: Circuit -> Label
 latestLabel (Identity lc) = let (labels,_) = unzip lc in maximum labels
@@ -78,7 +80,8 @@ maybeAppend c targets d = do
 instance LabelledCircuit Circuit where
     identity = Identity
     
-    fromGate H = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], H, [(1,Qubit)]) --could simplify if constraints on unarity or so
+    fromGate Meas = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], Meas, [(1,Qubit)]) -- For now, Meas outputs a qubit (bit is still unimplemented)
+    fromGate H = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], H, [(1,Qubit)])
     fromGate X = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], X, [(1,Qubit)])
     fromGate (R m) = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], (R m), [(1,Qubit)])
     fromGate (C g) = let    (Identity _) :+ (lci, _, lco) = fromGate g --this case is so messy, it could be refactored
@@ -97,8 +100,12 @@ instance LabelledCircuit Circuit where
         Just x -> x
         Nothing -> error "application in which some targets do not exist or are of the wrong type" --not very Haskell of me
 
+parallel :: Gate sig -> Int -> Circuit
+parallel g 1 = fromGate g
+parallel g n = fst $ append (Identity (zip [0..n-1] (replicate n Qubit)) :+ ([(0,Qubit)], g, [(n,Qubit)])) [1..n-1] (parallel g (n-1))
+
 hadamard :: Int -> Circuit
-hadamard 1 = fromGate H
-hadamard n = let
-    (hn,_) = append (Identity (zip [0..n-1] (replicate n Qubit)) :+ ([(0,Qubit)], H, [(n,Qubit)])) [1..n-1] (hadamard (n-1))
-    in hn
+hadamard = parallel H
+
+measure :: Int -> Circuit
+measure = parallel Meas

@@ -11,6 +11,7 @@ type family Controlled (sig :: [WireType]) :: [WireType] where
     Controlled sig = Qubit : sig
 
 data Gate (sig :: [WireType]) where
+    Meas :: Gate '[Qubit]
     H :: Gate '[Qubit]
     X :: Gate '[Qubit]
     R :: Int -> Gate '[Qubit]
@@ -18,6 +19,7 @@ data Gate (sig :: [WireType]) where
     --more later
 
 instance Show (Gate sig) where
+    show Meas = "measure"
     show H = "H"
     show X = "X"
     show (R m) = "R" ++ (showSubscript m)
@@ -25,6 +27,7 @@ instance Show (Gate sig) where
     show (C g) = "C" ++ (show g)
 
 instance Eq (Gate sig) where
+    Meas == Meas = True
     H == H = True
     X == X = True
     (R m) == (R k) = m == k
