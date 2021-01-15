@@ -1,25 +1,28 @@
 module Language.Lift where
 
-import Types
-import Classes
-import Interface hiding (Bang, force, lift)
+import LNLHask
 import Circuit.Gate
 import Circuit.Dynamic.Class
 import Circuit.Dynamic.Naive
-import DeepEmbedding
+import Language.Core
 
 import Control.Monad.State.Lazy hiding (lift)
 
-import Language.Core
+
+-- LINEAR TYPES
 
 data BangSig exp = MkBang exp
 type Bang a = MkLType ('MkBang a)
+
+
+-- INTERFACE
 
 class HasLift (exp :: Sig) where
     lift :: exp '[] a -> exp '[] (Bang a)
     force :: exp γ (Bang a) -> exp γ a
 
---DEEP EMBEDDING
+
+-- DEEP EMBEDDING
 
 data LiftExp :: Sig where
     Lift :: Deep '[] a -> LiftExp '[] (Bang a)
@@ -30,7 +33,7 @@ instance HasLift Deep where
     force = Dom . Force
 
 data instance LVal Deep (Bang a) where
-    VLift :: Deep '[] a -> LVal Deep (Bang a) --a lift-value is a closure just like a lambda-abstraction value, but it is always empty
+    VLift :: Deep '[] a -> LVal Deep (Bang a)
 
 instance Domain LiftExp where
     evalDomain (Lift m) _ = return $ VLift m

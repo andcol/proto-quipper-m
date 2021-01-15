@@ -1,26 +1,20 @@
 module Language.Box where
 
 import Prelude hiding ((^))
-
-import Types
-import Classes
-import Interface hiding (Bang, force, lift)
-import DeepEmbedding
-
+import LNLHask
 import Circuit.Gate
 import Circuit.Dynamic.Class
 import Circuit.Dynamic.Naive hiding (freshLabels)
-
 import Language.Core
 import Language.Lift
-import Language.LabelContexts --manipulation and reification of type-level label contexts
 
 import Control.Monad.State.Lazy hiding (lift)
 
 import Data.Proxy
+import Language.LabelContexts --manipulation and reification of type-level label contexts
 
 
---DECLARATION
+-- INTERFACE
 
 class (HasCore exp, HasLift exp, HasLolli exp) => HasBox (exp :: Sig) where
     box :: forall (t :: LType) (u :: LType) (γ :: Ctx).
@@ -29,8 +23,9 @@ class (HasCore exp, HasLift exp, HasLolli exp) => HasBox (exp :: Sig) where
             --  they are trivial equivalences that can only be resolved by GHC once a concrete type is supplied (i.e. not now)
             LabelCtx (FreshLabelContext γ t) t, --True because FreshLabelContexts γ t yields a valid Ctx type with only MTypes by definition
             MergeF (FreshLabelContext γ t) '[] ~ FreshLabelContext γ t, -- Trivially true (but MergeF is defined inductively on the first argument)
-            Types.Div (FreshLabelContext γ t) (FreshLabelContext γ t) ~ '[]) -- Trivially true (if I remove all xs from xs I get [])
+            Div (FreshLabelContext γ t) (FreshLabelContext γ t) ~ '[]) -- Trivially true (if I remove all xs from xs I get [])
                 => exp γ (Bang (t ⊸ u)) -> exp γ (Circ t u)
+
 
 --DEEP EMBEDDING
 
@@ -39,12 +34,11 @@ data BoxExp :: Sig where
             (MType Deep t, MType Deep u, KnownCtx γ,
             LabelCtx (FreshLabelContext γ t) t, --
             MergeF (FreshLabelContext γ t) '[] ~ FreshLabelContext γ t,
-            Types.Div (FreshLabelContext γ t) (FreshLabelContext γ t) ~ '[])
+            Div (FreshLabelContext γ t) (FreshLabelContext γ t) ~ '[])
                 => Deep γ (Bang (t ⊸ u)) -> BoxExp γ (Circ t u)
 
 instance HasBox Deep where
     box = Dom . Box
-
 
 instance Domain BoxExp where
     evalDomain (Box (m :: Deep γ (Bang (t ⊸ u)))) ρ = do

@@ -1,14 +1,11 @@
 module Language.LabelContexts where
 
-import Types
-import Interface
-import DeepEmbedding
-
+import LNLHask
 import Circuit.Gate
 import Circuit.Dynamic.Class
 import Language.Core
 
-import GHC.TypeLits
+import GHC.TypeLits hiding (Div)
 import Data.Proxy
 import Data.Type.Bool
 
@@ -55,11 +52,11 @@ instance (KnownNat x, LabelCtx γ' t',
             -- The remaining constraints do not reflect the logic of LabelCtx
             --  they are trivial equivalences that can only be resolved by GHC once a concrete type is supplied (i.e. not now)
             (AddF x Qubit γ') ~ ('(x, Qubit) : γ'), -- True because ('(x,Qubit) : γ') is a context and thus it is ordered in the first place (1)
-            (Remove x (Types.Div ('(x, Qubit) : γ') γ')) ~ '[], -- Trivially true (if I remove all xs and then x from x:xs I get [])
-            (Types.Div ('(x, Qubit) : γ') γ') ~ '[ '(x, Qubit) ], -- Trivially true (if I remove all xs from x:xs I get [x])
+            (Remove x (Div ('(x, Qubit) : γ') γ')) ~ '[], -- Trivially true (if I remove all xs and then x from x:xs I get [])
+            (Div ('(x, Qubit) : γ') γ') ~ '[ '(x, Qubit) ], -- Trivially true (if I remove all xs from x:xs I get [x])
             (MergeF γ' '[]) ~ γ', -- Trivially true (but MergeF is defined inductively on the first argument)
             (MergeF γ' '[ '(x, Qubit) ]) ~ ('(x, Qubit) : γ'), -- True, see (1)
-            (Types.Div γ' γ') ~ '[]) -- Trivially true (if I remove all xs from xs I get [])
+            (Div γ' γ') ~ '[]) -- Trivially true (if I remove all xs from xs I get [])
                 => LabelCtx' 'False ('(x,Qubit) : γ') (Qubit ⊗ t') where
     labelVector' _ _ = label (Proxy :: Proxy x) ⊗ labelVector (Proxy :: Proxy γ')
 
