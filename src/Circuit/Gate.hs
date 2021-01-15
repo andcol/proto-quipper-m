@@ -14,6 +14,7 @@ data Gate (sig :: [WireType]) where
     Meas :: Gate '[Qubit]
     H :: Gate '[Qubit]
     X :: Gate '[Qubit]
+    Z :: Gate '[Qubit]
     R :: Int -> Gate '[Qubit]
     C :: Gate sig -> Gate (Controlled sig)
     --more later
@@ -22,6 +23,7 @@ instance Show (Gate sig) where
     show Meas = "measure"
     show H = "H"
     show X = "X"
+    show Z = "Z"
     show (R m) = "R" ++ (showSubscript m)
     show (C X) = "CNOT"
     show (C g) = "C" ++ (show g)
@@ -30,6 +32,7 @@ instance Eq (Gate sig) where
     Meas == Meas = True
     H == H = True
     X == X = True
+    Z == Z = True
     (R m) == (R k) = m == k
     (C g) == (C h) = g == h
     g == h = False

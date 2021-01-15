@@ -83,6 +83,7 @@ instance LabelledCircuit Circuit where
     fromGate Meas = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], Meas, [(1,Qubit)]) -- For now, Meas outputs a qubit (bit is still unimplemented)
     fromGate H = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], H, [(1,Qubit)])
     fromGate X = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], X, [(1,Qubit)])
+    fromGate Z = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], Z, [(1,Qubit)])
     fromGate (R m) = (Identity [(0,Qubit)]) :+ ([(0,Qubit)], (R m), [(1,Qubit)])
     fromGate (C g) = let    (Identity _) :+ (lci, _, lco) = fromGate g --this case is so messy, it could be refactored
                             lci' = (0,Qubit) : (shift 1 lci)
