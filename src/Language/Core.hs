@@ -21,8 +21,12 @@ class MType (exp :: Sig) (t :: LType) where
     labels :: LVal exp t -> [Label] --extracts the labels of a value of MType T
     signature :: LVal exp t -> [WireType] --extracts a runtime representation (WireType) of the MType T of a value
     fromLabelContext :: LabelContext -> LVal exp t --constructs a value of MType T from a label context
-    toLabelContext :: LVal exp t -> LabelContext --retrieves the label context Q such that ∅;Q ⊢ ℓ : t
-    toLabelContext vl = zip (labels vl) (signature vl)
+
+toLabelContext :: MType exp t => LVal exp t -> LabelContext --retrieves the label context Q such that ∅;Q ⊢ ℓ : t
+toLabelContext vl = zip (labels vl) (signature vl)
+
+arity :: MType exp t => LVal exp t -> Int
+arity vl = length . signature $ vl
 
 data QubitSig exp = MkQubit
 type Qubit = MkLType 'MkQubit
