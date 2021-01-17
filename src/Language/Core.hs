@@ -19,25 +19,28 @@ type UnderlyingCircuit = Circuit --choose the implementation of the circuit here
 
 class MType (exp :: Sig) (t :: LType) where
     labels :: LVal exp t -> [Label] --extracts the labels of a value of MType T
-    signature :: LVal exp t -> [WireType] --extracts a runtime representation (WireType) of the MType T of a value
+    toWireType :: Proxy exp -> Proxy t -> [WireType]
     fromLabelContext :: LabelContext -> LVal exp t --constructs a value of MType T from a label context
 
-toLabelContext :: MType exp t => LVal exp t -> LabelContext --retrieves the label context Q such that ∅;Q ⊢ ℓ : t
-toLabelContext vl = zip (labels vl) (signature vl)
+sig :: MType exp t => LVal exp t -> [WireType] --extracts a runtime representation (WireType) of the MType T of a value
+sig (_ :: LVal exp t) = toWireType (Proxy :: (Proxy exp)) (Proxy :: Proxy t)
 
-arity :: MType exp t => LVal exp t -> Int
-arity vl = length . signature $ vl
+toLabelContext :: MType exp t => LVal exp t -> LabelContext --retrieves the label context Q such that ∅;Q ⊢ ℓ : t
+toLabelContext vl = zip (labels vl) (sig vl)
+
+size :: MType exp t => Proxy exp -> Proxy t -> Int
+size expp tp = length $ toWireType expp tp
 
 data QubitSig exp = MkQubit
 type Qubit = MkLType 'MkQubit
 
 instance MType Deep Qubit where
     labels (VLabel id) = [id]
-    signature _ = [Qubit]
+    toWireType _ _ = [Qubit]
     fromLabelContext [(l,Qubit)] = VLabel l
 instance (MType Deep t) => MType Deep (Qubit ⊗ t) where
     labels (VPair (VLabel id) x) = id : (labels x)
-    signature (VPair _ r) = Qubit : (signature r)
+    toWireType _ (Proxy :: Proxy (Qubit ⊗ t)) = Qubit : (toWireType (Proxy :: Proxy Deep) (Proxy :: Proxy t))
     fromLabelContext ((l,Qubit):lcr) = VPair (VLabel l) (fromLabelContext lcr)
 
 data CircSig exp = MkCirc exp exp
@@ -83,7 +86,7 @@ instance Domain CoreExp where
         VCirc l d l' <- eval circuit ρ1
         targetVec <- eval targets ρ2
         outputVec <- appendM (labels targetVec) d
-        return $ fromLabelContext (zip outputVec (signature l'))
+        return $ fromLabelContext (zip outputVec (sig l'))
         where
             (ρ1,ρ2) = splitECtx @γ1 @γ2 ρ
 
