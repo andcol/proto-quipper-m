@@ -11,7 +11,6 @@ FIXES
 IMPROVEMENTS
 
 > [code] try to merge KnownCtx and LabelCtx typeclasses (they basically represent the same thing)
-> [code] try to use Paykin's lift instead of our own (check that there are no differences)
 > [usefulness] return choice of circuit implementation to "frontend" (i.e. let the user choose)
 > [performance] Use of appends ends up generating bigger labels than necessary
 > [haskellness] implement proper error handling instead of using "error"
