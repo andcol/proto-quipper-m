@@ -1,7 +1,6 @@
 MAIN
 
 > Implement Quipper examples
-> [usability] look into Template Haskell for icky compile-time stuff (e.g. static vs. dynamic labels)
 > [feature] implement bit (perhaps?)
 
 

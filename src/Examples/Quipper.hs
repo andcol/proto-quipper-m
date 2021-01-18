@@ -6,6 +6,7 @@
 -- by A.S. Green et al., 2013                                          --
 -------------------------------------------------------------------------
 
+
 module Examples.Quipper where
 
 import Prelude hiding ((^))
@@ -42,7 +43,8 @@ bell00 = share ^ (plusMinus False)
 --Quantum teleportation
 
 alice :: Deep '[] (Qubit ⊸ Qubit ⊸ (Qubit ⊗ Qubit)) --for now we do not have bits
--- alice = λq. λa. let ⟨q',a'⟩ = apply((⟨0,1⟩,CX,⟨2,3⟩),⟨q,a⟩) in apply((⟨0,1⟩,Meas2,⟨2,3⟩),⟨apply((0,H,1),q'),a'⟩)
+-- alice = λq. λa. let ⟨q',a'⟩ = apply((⟨0,1⟩,CX,⟨2,3⟩),⟨q,a⟩) in
+--                   apply((⟨0,1⟩,Meas2,⟨2,3⟩),⟨apply((0,H,1),q'),a'⟩)
 alice = λ $ \q -> λ $ \a ->
         apply (circuit (VLabel 0 `VPair` VLabel 1) (fromGate $ C X) (VLabel 2 `VPair` VLabel 3)) (q ⊗ a)
         `letPair` \(q',a') -> apply (circuit (VLabel 0 `VPair` VLabel 1) (measure 2) (VLabel 2 `VPair` VLabel 3))
@@ -53,7 +55,7 @@ bob :: Deep '[] (Qubit ⊸ (Qubit ⊗ Qubit) ⊸ (Qubit ⊗ (Qubit ⊗ Qubit)))
 -- bob = λb. λxy. let ⟨x,y⟩ = xy in
 --            let ⟨y',b'⟩ = apply ((⟨0,1⟩,CX,⟨2,3⟩),⟨y,b⟩) in
 --            let ⟨x',b''⟩ = apply ((⟨0,1⟩,CX,⟨2,3⟩),⟨x,b'⟩) in
---            ⟨b'',⟨x',y'⟩⟩
+--              ⟨b'',⟨x',y'⟩⟩
 bob = λ $ \b -> λ $ \xy ->
       xy `letPair` \(x,y) -> (apply (circuit (VLabel 0 `VPair` VLabel 1) (fromGate $ C X) (VLabel 2 `VPair` VLabel 3)) (y ⊗ b))
       `letPair` \(y',b') -> (apply (circuit (VLabel 0 `VPair` VLabel 1) (fromGate $ C Z) (VLabel 2 `VPair` VLabel 3)) (x ⊗ b'))
@@ -62,7 +64,7 @@ bob = λ $ \b -> λ $ \xy ->
 teleport :: Deep '[ '(0,Qubit),'(1,Qubit) ] (Qubit ⊸ (Qubit ⊗ (Qubit ⊗ Qubit)))
 -- teleport = λq. let ⟨a,b⟩ = bell00 in
 --                let ⟨x,y⟩ = alice q a in
---                bob b ⟨x,y⟩                 
+--                  bob b ⟨x,y⟩                 
 teleport = λ $ \q ->
             bell00 `letPair` \(a,b) -> alice ^ q ^ a
             `letPair` \(x,y) -> bob ^ b ^ (x ⊗ y)
@@ -75,4 +77,4 @@ generate (exp :: Deep γ t) = c
     (_,c) = runState res (identity $ exp2LabelContext exp)
 
 test :: IO ()
-test = print $ generate (teleport ^ (label l3))
+test = print $ generate (teleport ^ (label l2))

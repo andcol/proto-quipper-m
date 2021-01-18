@@ -17,8 +17,7 @@ packages:
     url: https://github.com/jpaykin/LNLHaskell/archive/7c3e3880d2702b5456326870ba4863f27a8606b4.tar.gz
 snapshots:
 - completed:
-    size: 532835
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/24.yaml
-    sha256: cf2b52420b2262fe9cf0f6744929120131abd6675b1c3fb2d8b155a47f80d103
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/24.yaml
+    size: 532380
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/15.yaml
+    sha256: 3b5f2a699aa5ed3abbc30410062bf743926f0868ce3eeb5655370c6c6cc1a9f4
+  original: lts-16.15

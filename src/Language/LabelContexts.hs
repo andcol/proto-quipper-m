@@ -32,7 +32,7 @@ instance (KnownNat x, KnownCtx γ', (AddF x Qubit γ') ~ ('(x, Qubit) : γ')) =>
 
 -- |LabelCtx identifies non-empty label contexts, i.e. types of kind [(Nat,LType)] where LType = Qubit (for now) which can be given an MType t
 -- labelVector turns γ into a vector (tensoring) of labels, where each label is a variable from γ.
---  The type t of the resulting vector is similarly  given by the types in γ 
+--  The type t of the resulting vector is similarly given by the types in γ 
 class (KnownCtx γ, MType Deep t) => LabelCtx (γ :: Ctx) (t :: LType) | γ -> t where
     labelVector :: Proxy γ -> Deep γ t
 instance (KnownCtx γ, MType Deep t, singleton ~ IsSingleton γ, LabelCtx' singleton γ t) => LabelCtx γ t where
